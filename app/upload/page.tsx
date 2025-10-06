@@ -25,7 +25,15 @@ export default function UploadPage() {
       if (!f.type.startsWith("image/")) continue;
       arr.push({ file: f, preview: URL.createObjectURL(f) });
     }
-    setFiles(arr);
+    setFiles((prev) => [...prev, ...arr]);
+  }
+
+  function onRemove(preview: string) {
+    setFiles((prev) => prev.filter((x) => x.preview !== preview));
+  }
+
+  function onClear() {
+    setFiles([]);
   }
 
   const canPost = useMemo(() => files.length > 0 || caption.trim().length > 0, [files, caption]);
@@ -76,7 +84,10 @@ export default function UploadPage() {
 
   return (
     <div className="mx-auto max-w-md sm:max-w-lg p-4 space-y-4">
-      <h1 className="text-lg font-semibold">New Post</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold">New Post</h1>
+        <a href="/feed" className="text-sm underline">Back to feed</a>
+      </div>
       <input
         type="text"
         placeholder="Optional title (used as folder name)"
@@ -101,12 +112,37 @@ export default function UploadPage() {
           onChange={onPick}
           className="block"
         />
+        <div
+          onDragOver={(e) => { e.preventDefault(); }}
+          onDrop={(e) => {
+            e.preventDefault();
+            const fl = e.dataTransfer.files;
+            const arr: LocalFile[] = [];
+            for (let i = 0; i < fl.length; i++) {
+              const f = fl[i];
+              if (!f.type.startsWith("image/")) continue;
+              arr.push({ file: f, preview: URL.createObjectURL(f) });
+            }
+            setFiles((prev) => [...prev, ...arr]);
+          }}
+          className="border-2 border-dashed rounded-lg p-6 text-center text-sm text-black/60 dark:text-white/60"
+        >
+          Drag & drop images here
+        </div>
         {files.length > 0 && (
-          <div className="grid grid-cols-3 gap-2">
-            {files.map((f) => (
-              <img key={`${f.preview}-${f.file.size}`} src={f.preview} alt="preview" className="w-full h-24 object-cover rounded" />
-            ))}
-          </div>
+          <>
+            <div className="flex justify-end">
+              <button type="button" onClick={onClear} className="text-xs underline">Clear all</button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {files.map((f) => (
+                <div key={`${f.preview}-${f.file.size}`} className="relative">
+                  <img src={f.preview} alt="preview" className="w-full h-24 object-cover rounded" />
+                  <button type="button" className="absolute top-1 right-1 bg-black/60 text-white text-xs rounded px-1" onClick={() => onRemove(f.preview)}>×</button>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
       <div className="flex items-center gap-3">

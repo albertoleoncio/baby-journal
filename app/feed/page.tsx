@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { getUserPosts } from "@/lib/posts";
 import { Carousel } from "@/components/Carousel";
+import { PostActions } from "@/components/PostActions";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,10 @@ export default async function FeedPage() {
           <article key={post.id} className="bg-white dark:bg-black rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
             <Carousel images={post.images} />
             <div className="p-4">
-              <h2 className="text-base font-semibold mb-1">{post.title}</h2>
+              <div className="flex items-start justify-between gap-2">
+                <h2 className="text-base font-semibold mb-1">{post.title}</h2>
+                <PostActions folderId={post.id} />
+              </div>
               <p className="text-xs text-black/50 dark:text-white/50 mb-2">
                 {new Date(post.date).toLocaleString()}
               </p>
