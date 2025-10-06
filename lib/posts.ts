@@ -32,22 +32,23 @@ function isImage(item: GraphDriveItem) {
 export async function getUserPosts(accessToken: string, userId: string): Promise<Post[]> {
   const key = `${userId}`;
   const now = Date.now();
+  const isDev = process.env.NODE_ENV === "development";
   const entry = cache.get(key);
-  if (entry && now - entry.ts < CACHE_TTL_MS) return entry.posts;
+  if (!isDev && entry && now - entry.ts < CACHE_TTL_MS) return entry.posts;
 
   // First list subfolders under ROOT_PATH
   const children = await listChildren(accessToken, ROOT_PATH);
-  const subfolders = children.filter((c) => c.folder);
+  const subfolders = (children || []).filter((c) => c.folder);
 
   const posts: Post[] = [];
   for (const folder of subfolders) {
     const subPath = `${ROOT_PATH}/${folder.name}`;
-    const items = await listChildren(accessToken, subPath);
+  const items = await listChildren(accessToken, subPath);
 
     let description: string | null = null;
     const images: Post["images"] = [];
 
-    for (const it of items) {
+  for (const it of items || []) {
       if (it.file) {
         if (isTextFile(it.name)) {
           try {

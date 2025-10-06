@@ -30,7 +30,10 @@ export default async function FeedPage() {
     <div className="mx-auto max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl p-0 sm:p-4">
       <header className="sticky top-0 z-10 backdrop-blur bg-background/70 border-b border-black/5 dark:border-white/10 px-4 py-3 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Baby Journal</h1>
-        <a href="/api/auth/signout" className="rounded-full border px-3 py-1 text-sm hover:bg-black/5 dark:hover:bg-white/10">Sign out</a>
+        <div className="flex gap-2">
+          <a href="/upload" className="rounded-full border px-3 py-1 text-sm bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-400 dark:text-black transition">Upload</a>
+          <a href="/api/auth/signout" className="rounded-full border px-3 py-1 text-sm hover:bg-black/5 dark:hover:bg-white/10">Sign out</a>
+        </div>
       </header>
 
       <main className="space-y-6 p-2">

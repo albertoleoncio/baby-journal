@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth/next";
 import AzureADProvider from "next-auth/providers/azure-ad";
 
-// Scopes: offline_access for refresh tokens, Files.Read for OneDrive, plus basic OIDC scopes
-const scopes = ["openid", "profile", "email", "offline_access", "Files.Read"].join(" ");
+// Scopes: offline_access for refresh tokens, Files.ReadWrite for OneDrive write access, plus basic OIDC scopes
+const scopes = ["openid", "profile", "email", "offline_access", "Files.ReadWrite"].join(" ");
 
 type MicrosoftToken = {
   accessToken?: string;

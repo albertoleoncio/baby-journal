@@ -16,7 +16,7 @@ AUTH_MICROSOFT_SECRET=your-client-secret
 2) Azure app registration (Microsoft OAuth):
 
 - Redirect URI (web): `http://localhost:3000/api/auth/callback/microsoft`
-- Permissions: `openid`, `profile`, `email`, `offline_access`, `Files.Read`
+- Permissions: `openid`, `profile`, `email`, `offline_access`, `Files.ReadWrite`
 
 3) Install and run the development server:
 
