@@ -39,7 +39,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
           if (thumbRes.ok) {
             const td = await thumbRes.json();
             if (td.value && td.value[0]) {
-              thumbnailUrl = td.value[0].medium?.url || td.value[0].small?.url || td.value[0].large?.url;
+              // Always prefer large, then medium, then small
+              thumbnailUrl = td.value[0].large?.url || td.value[0].medium?.url || td.value[0].small?.url;
             }
           }
         } catch {}

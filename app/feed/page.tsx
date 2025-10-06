@@ -1,7 +1,15 @@
+function formatEpochTitle(epoch: string): string {
+  const date = new Date(Number(epoch) * 1000);
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 import { auth } from "@/auth";
-import { getUserPosts } from "@/lib/posts";
-import { Carousel } from "@/components/Carousel";
-import { PostActions } from "@/components/PostActions";
+import { getUserPostIndex } from "@/lib/posts";
+import { PostCard } from "@/components/PostCard";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +33,7 @@ export default async function FeedPage() {
 
   const accessToken = (session as any).accessToken as string;
   const userId = (session as any).userId as string;
-  const posts = await getUserPosts(accessToken, userId);
+  const index = await getUserPostIndex(accessToken, userId);
 
   return (
     <div className="mx-auto max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl p-0 sm:p-4">
@@ -38,27 +46,10 @@ export default async function FeedPage() {
       </header>
 
       <main className="space-y-6 p-2">
-        {posts.map((post) => (
-          <article key={post.id} className="bg-white dark:bg-black rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
-            <Carousel images={post.images} />
-            <div className="p-4">
-              <div className="flex items-start justify-between gap-2">
-                <h2 className="text-base font-semibold mb-1">{post.title}</h2>
-                <div className="flex items-center gap-3">
-                  <a href={`/posts/${post.id}/edit`} className="text-xs hover:underline">Edit</a>
-                  <PostActions folderId={post.id} />
-                </div>
-              </div>
-              <p className="text-xs text-black/50 dark:text-white/50 mb-2">
-                {new Date(post.date).toLocaleString()}
-              </p>
-              {post.description && (
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">{post.description}</p>
-              )}
-            </div>
-          </article>
+        {index.map((p) => (
+          <PostCard key={p.id} id={p.id} title={p.title} date={p.date} />
         ))}
-        {posts.length === 0 && (
+        {index.length === 0 && (
           <div className="text-center text-sm text-black/60 dark:text-white/60 py-12">
             No posts found in OneDrive at <code className="px-1 py-0.5 rounded bg-black/5 dark:bg-white/10">/Apps/BabyJournal</code>.
           </div>

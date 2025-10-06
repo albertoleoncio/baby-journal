@@ -13,6 +13,12 @@ export type Post = {
   }[];
 };
 
+export type PostIndex = {
+  id: string;
+  title: string; // epoch string in folder name
+  date: string; // ISO from folder metadata
+};
+
 // naive in-memory cache per user (server memory) with TTL
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const cache = new Map<string, { ts: number; posts: Post[] }>();
@@ -43,12 +49,12 @@ export async function getUserPosts(accessToken: string, userId: string): Promise
   const posts: Post[] = [];
   for (const folder of subfolders) {
     const subPath = `${ROOT_PATH}/${folder.name}`;
-  const items = await listChildren(accessToken, subPath);
+    const items = await listChildren(accessToken, subPath);
 
     let description: string | null = null;
     const images: Post["images"] = [];
 
-  for (const it of items || []) {
+    for (const it of items || []) {
       if (it.file) {
         if (isTextFile(it.name)) {
           try {
@@ -76,8 +82,10 @@ export async function getUserPosts(accessToken: string, userId: string): Promise
             if (thumbRes.ok) {
               const thumbData = await thumbRes.json();
               if (thumbData.value && thumbData.value.length > 0) {
+                // Always prefer the largest available thumbnail for best quality
                 thumbnailUrl =
                   thumbData.value[0].large?.url ||
+                  thumbData.value[0].extraLarge?.url ||
                   thumbData.value[0].medium?.url ||
                   thumbData.value[0].small?.url;
               }
@@ -91,18 +99,33 @@ export async function getUserPosts(accessToken: string, userId: string): Promise
     const sortedImages = images.toSorted((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
     posts.push({
       id: folder.id,
-      title: folder.name,
+      title: folder.name, // epoch string
       description,
       date: folder.createdDateTime || folder.lastModifiedDateTime || new Date().toISOString(),
       images: sortedImages,
     });
   }
 
-  posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // Sort posts by folder name (epoch) descending
+  posts.sort((a, b) => Number(b.title) - Number(a.title));
   cache.set(key, { ts: now, posts });
   return posts;
 }
 
 export function invalidateUserPostsCache(userId: string) {
   cache.delete(`${userId}`);
+}
+
+// Lightweight index for faster first paint: only folders, no images/descriptions
+export async function getUserPostIndex(accessToken: string, _userId: string): Promise<PostIndex[]> {
+  const children = await listChildren(accessToken, ROOT_PATH);
+  const subfolders = (children || []).filter((c) => c.folder);
+  const list: PostIndex[] = subfolders.map((f) => ({
+    id: f.id!,
+    title: f.name,
+    date: f.createdDateTime || f.lastModifiedDateTime || new Date().toISOString(),
+  }));
+  // Sort by folder name as epoch desc
+  list.sort((a, b) => Number(b.title) - Number(a.title));
+  return list;
 }
