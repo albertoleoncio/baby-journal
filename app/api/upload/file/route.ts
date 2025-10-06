@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { invalidateUserPostsCache } from "@/lib/posts";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -32,5 +33,7 @@ export async function POST(req: Request) {
   }
 
   const uploaded = await putRes.json();
+  const userId = (session as any).userId as string | undefined;
+  if (userId) invalidateUserPostsCache(userId);
   return Response.json({ id: uploaded.id, name: uploaded.name });
 }

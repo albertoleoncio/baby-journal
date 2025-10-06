@@ -44,7 +44,10 @@ export default async function FeedPage() {
             <div className="p-4">
               <div className="flex items-start justify-between gap-2">
                 <h2 className="text-base font-semibold mb-1">{post.title}</h2>
-                <PostActions folderId={post.id} />
+                <div className="flex items-center gap-3">
+                  <a href={`/posts/${post.id}/edit`} className="text-xs hover:underline">Edit</a>
+                  <PostActions folderId={post.id} />
+                </div>
               </div>
               <p className="text-xs text-black/50 dark:text-white/50 mb-2">
                 {new Date(post.date).toLocaleString()}
