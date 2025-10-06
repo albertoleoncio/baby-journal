@@ -5,7 +5,12 @@ export type Post = {
   title: string;
   description: string | null;
   date: string; // ISO string
-  images: { id: string; name: string; mimeType?: string }[];
+  images: {
+    id: string;
+    name: string;
+    mimeType?: string;
+    thumbnailUrl?: string;
+  }[];
 };
 
 // naive in-memory cache per user (server memory) with TTL
@@ -58,7 +63,26 @@ export async function getUserPosts(accessToken: string, userId: string): Promise
             }
           } catch {}
         } else if (isImage(it)) {
-          images.push({ id: it.id, name: it.name, mimeType: it.file?.mimeType });
+          // Try to get a thumbnail
+          let thumbnailUrl: string | undefined;
+          try {
+            const thumbRes = await fetch(
+              `https://graph.microsoft.com/v1.0/me/drive/items/${it.id}/thumbnails`,
+              {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              }
+            );
+            if (thumbRes.ok) {
+              const thumbData = await thumbRes.json();
+              if (thumbData.value && thumbData.value.length > 0) {
+                thumbnailUrl =
+                  thumbData.value[0].large?.url ||
+                  thumbData.value[0].medium?.url ||
+                  thumbData.value[0].small?.url;
+              }
+            }
+          } catch {}
+          images.push({ id: it.id, name: it.name, mimeType: it.file?.mimeType, thumbnailUrl });
         }
       }
     }

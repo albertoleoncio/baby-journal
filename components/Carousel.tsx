@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type Img = { id: string; name: string; mimeType?: string };
+type Img = { id: string; name: string; mimeType?: string; thumbnailUrl?: string };
 
 export function Carousel({ images }: { images: Img[] }) {
   const [index, setIndex] = useState(0);
@@ -30,11 +30,12 @@ export function Carousel({ images }: { images: Img[] }) {
   return (
     <div className="relative aspect-[4/5] bg-black/5 dark:bg-white/5">
       <img
-        src={`/api/image?id=${encodeURIComponent(images[index].id)}`}
+        src={images[index].thumbnailUrl || `/api/image?id=${encodeURIComponent(images[index].id)}`}
         alt={images[index].name}
         className="w-full h-full object-cover"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
+        loading="lazy"
       />
       {count > 1 && (
         <>

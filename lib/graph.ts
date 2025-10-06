@@ -16,7 +16,7 @@ export async function graphGet<T>(
   accessToken: string,
   url: string,
   init?: RequestInit
-): Promise<T> {
+): Promise<T | null> {
   const res = await fetch(url, {
     ...init,
     headers: {
@@ -24,6 +24,10 @@ export async function graphGet<T>(
       Authorization: `Bearer ${accessToken}`,
     },
   });
+  if (res.status === 404) {
+    // Folder or file not found, fail gracefully
+    return null;
+  }
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Graph error ${res.status}: ${text}`);
@@ -41,6 +45,10 @@ export async function listChildren(
   const all: GraphDriveItem[] = [];
   for (let i = 0; i < 10; i++) {
     const data = await graphGet<GraphListResponse<GraphDriveItem>>(accessToken, url);
+    if (!data) {
+      // Folder not found, return empty
+      return [];
+    }
     all.push(...data.value);
     if (!data['@odata.nextLink']) break;
     url = data['@odata.nextLink'];
