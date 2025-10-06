@@ -14,6 +14,7 @@ export default function EditPostPage() {
 
   useEffect(() => {
     (async () => {
+      if (!params?.id) return;
       const res = await fetch(`/api/posts/${params.id}`);
       if (res.ok) {
         const json = await res.json();
@@ -23,7 +24,7 @@ export default function EditPostPage() {
       }
       setLoading(false);
     })();
-  }, [params.id]);
+  }, [params?.id]);
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const fl = e.target.files;
@@ -55,14 +56,17 @@ export default function EditPostPage() {
     setSaving(true);
     // Rename if changed
     if (title && title !== data?.title) {
-      await fetch("/api/posts/rename", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ folderId: params.id, newName: title }) });
+  if (!params?.id) return;
+  await fetch("/api/posts/rename", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ folderId: params.id, newName: title }) });
     }
     // Update caption
-    await fetch("/api/posts/update-caption", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ folderId: params.id, caption }) });
+  if (!params?.id) return;
+  await fetch("/api/posts/update-caption", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ folderId: params.id, caption }) });
     // Upload new files
     for (const file of newFiles) {
       const form = new FormData();
-      form.append("folderId", params.id);
+  if (!params?.id) return;
+  form.append("folderId", params.id);
       form.append("file", file);
       form.append("fileName", file.name);
       await fetch("/api/upload/file", { method: "POST", body: form as any });

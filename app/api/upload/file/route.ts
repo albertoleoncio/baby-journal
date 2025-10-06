@@ -15,18 +15,18 @@ export async function POST(req: Request) {
   const fileName = (formData.get("fileName") as string) || file.name || `photo-${Date.now()}.jpg`;
 
   // Upload via PUT content to items/{folderId}:/fileName:/content
-  const putRes = await fetch(
-    `https://graph.microsoft.com/v1.0/me/drive/items/${encodeURIComponent(folderId)}:/${encodeURIComponent(fileName)}:/content`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": file.type || "application/octet-stream",
-      },
-      body: file.stream(),
-      duplex: "half",
-    }
-  );
+    const putRes = await fetch(
+      `https://graph.microsoft.com/v1.0/me/drive/items/${encodeURIComponent(folderId)}:/${encodeURIComponent(fileName)}:/content`,
+      {
+        method: "PUT",
+        headers: {
+              "Content-Type": file.type || "application/octet-stream",
+              "Authorization": `Bearer ${accessToken}`,
+        },
+        body: file.stream(),
+        duplex: "half",
+      } as any
+    );
   if (!putRes.ok) {
     const txt = await putRes.text();
     return new Response(`Failed to upload file: ${txt}`, { status: putRes.status });
