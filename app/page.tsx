@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { SharedFeedButton } from "@/components/SharedFeedButton";
 
 export default async function Home() {
   const session = await auth();
@@ -16,6 +17,7 @@ export default async function Home() {
           ) : (
             <>
               <a href="/feed" className="rounded-full border px-4 py-2 text-sm">Go to Feed</a>
+              <SharedFeedButton />
               <a href="/api/auth/signout" className="rounded-full border px-4 py-2 text-sm">Sign out</a>
             </>
           )}
