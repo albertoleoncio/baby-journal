@@ -131,7 +131,7 @@ export function PostCard({ id, title, date, driveId }: Readonly<{ id: string; ti
             <div className="flex items-center gap-3">{/* Shared: read-only */}</div>
           )}
         </div>
-        <p className="text-xs text-black/50 dark:text-white/50 mb-2">{new Date(date).toLocaleString()}</p>
+        <p className="text-xs text-black/50 dark:text-white/50 mb-2">Folder {title}</p>
         {descriptionSection}
       </div>
     </article>
