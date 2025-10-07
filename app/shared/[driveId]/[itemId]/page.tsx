@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { PostCard } from "@/components/PostCard";
 import { SignInRequired } from "@/components/SignInRequired";
 import { FeedContainer } from "@/components/FeedContainer";
+import { SharedStoriesClient } from "./stories-client";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export default async function SharedFeedPage({ params }: { readonly params: { re
       title="Shared Baby Journal"
       right={<a href="/feed" className="rounded-full border px-3 py-1 text-sm hover:bg-black/5 dark:hover:bg-white/10">Back to my feed</a>}
     >
+      <SharedStoriesClient driveId={driveId} itemId={itemId} token={accessToken} />
       {posts.map((p: any) => (
         <PostCard key={p.id} driveId={driveId} id={p.id} title={p.title} date={p.date} />
       ))}
