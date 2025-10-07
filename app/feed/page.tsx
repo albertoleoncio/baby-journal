@@ -1,10 +1,11 @@
 import { auth } from "@/auth";
 import { getUserPostIndex } from "@/lib/posts";
-import { getUserStories } from "@/lib/stories";
+import { Suspense } from "react";
 import { PostCard } from "@/components/PostCard";
 import { SignInRequired } from "@/components/SignInRequired";
 import { FeedContainer } from "@/components/FeedContainer";
-import { StoriesClient } from "@/app/feed/stories-client";
+import StoriesSection from "@/app/feed/StoriesSection";
+import { StoriesSkeleton } from "@/components/StoriesSkeleton";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,6 @@ export default async function FeedPage() {
   const accessToken = (session as any).accessToken as string;
   const userId = (session as any).userId as string;
   const index = await getUserPostIndex(accessToken, userId);
-  const stories = (await getUserStories(accessToken, userId)).filter(s => /^\d+$/.test(s.title));
 
   return (
     <FeedContainer
@@ -27,7 +27,10 @@ export default async function FeedPage() {
         </>
       }
     >
-      <StoriesClient initial={stories.map(s => ({ id: s.id, title: s.title, date: s.date, coverUrl: s.videos[0]?.thumbnailUrl }))} />
+      <Suspense fallback={<StoriesSkeleton />}> 
+        {/* Stories section loads in parallel with a skeleton */}
+        <StoriesSection accessToken={accessToken} userId={userId} />
+      </Suspense>
       {index.map((p) => (
         <PostCard key={p.id} id={p.id} title={p.title} date={p.date} />
       ))}

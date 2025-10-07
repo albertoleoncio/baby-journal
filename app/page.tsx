@@ -17,8 +17,9 @@ export default async function Home() {
           ) : (
             <>
               <a href="/feed" className="rounded-full border px-4 py-2 text-sm">Go to Feed</a>
-              <SharedFeedButton />
               <a href="/api/auth/signout" className="rounded-full border px-4 py-2 text-sm">Sign out</a>
+              <br />
+              <SharedFeedButton />
             </>
           )}
         </div>

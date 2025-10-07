@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { StoriesBar } from "@/components/StoriesBar";
+import { StoriesSkeleton } from "@/components/StoriesSkeleton";
 import { StoryViewer } from "@/components/StoryViewer";
 
 export function SharedStoriesClient({ driveId, itemId, token }: Readonly<{ driveId: string; itemId: string; token: string }>) {
@@ -22,9 +23,10 @@ export function SharedStoriesClient({ driveId, itemId, token }: Readonly<{ drive
     };
   }, [driveId, itemId, token]);
 
+  const loading = items.length === 0;
   return (
     <div className="px-2">
-      <StoriesBar items={items} onOpen={(id) => setOpenId(id)} />
+      {loading ? <StoriesSkeleton /> : <StoriesBar items={items} onOpen={(id) => setOpenId(id)} />}
       {openId && (
         <StoryViewer
           id={openId}

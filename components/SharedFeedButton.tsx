@@ -13,6 +13,7 @@ type SharedItem = {
 export function SharedFeedButton() {
   const [link, setLink] = useState<string | null>(null);
   const [label, setLabel] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -31,10 +32,16 @@ export function SharedFeedButton() {
           setLabel(`Go to ${owner}'s feed`);
         }
       } catch {}
+      finally {
+        if (active) setLoading(false);
+      }
     })();
     return () => { active = false; };
   }, []);
 
+  if (loading) {
+    return <span className="text-sm text-black/60 dark:text-white/60">Looking for shared feed…</span>;
+  }
   if (!link) return null;
   return (
     <a href={link} className="rounded-full border px-4 py-2 text-sm">
