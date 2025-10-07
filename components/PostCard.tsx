@@ -15,7 +15,8 @@ function formatEpochTitle(epoch: string): string {
   });
 }
 
-export function PostCard({ id, title, date }: { id: string; title: string; date: string }) {
+// If driveId is provided, we treat it as a shared, read-only post
+export function PostCard({ id, title, date, driveId }: { id: string; title: string; date: string; driveId?: string }) {
   const [images, setImages] = useState<Img[] | null>(null);
   const [description, setDescription] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +25,13 @@ export function PostCard({ id, title, date }: { id: string; title: string; date:
     let active = true;
     (async () => {
       try {
-        const res = await fetch(`/api/posts/${id}`);
+        const res = driveId
+          ? await fetch(`/api/shared/post`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ driveId, folderId: id }),
+            })
+          : await fetch(`/api/posts/${id}`);
         if (!active) return;
         if (res.ok) {
           const json = await res.json();
@@ -38,7 +45,7 @@ export function PostCard({ id, title, date }: { id: string; title: string; date:
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [id, driveId]);
 
   return (
     <article className="bg-white dark:bg-black rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
@@ -52,10 +59,14 @@ export function PostCard({ id, title, date }: { id: string; title: string; date:
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-base font-semibold mb-1">{formatEpochTitle(title)}</h2>
-          <div className="flex items-center gap-3">
-            <a href={`/posts/${id}/edit`} className="text-xs hover:underline">Edit</a>
-            <PostActions folderId={id} />
-          </div>
+          {!driveId ? (
+            <div className="flex items-center gap-3">
+              <a href={`/posts/${id}/edit`} className="text-xs hover:underline">Edit</a>
+              <PostActions folderId={id} />
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">{/* Shared: read-only */}</div>
+          )}
         </div>
         <p className="text-xs text-black/50 dark:text-white/50 mb-2">{new Date(date).toLocaleString()}</p>
         {description ? (

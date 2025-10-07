@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { SharedPostCard } from "@/components/SharedPostCard";
+import { PostCard } from "@/components/PostCard";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +31,7 @@ export default async function SharedFeedPage({ params }: { params: { driveId: st
 
       <main className="space-y-6 p-2">
         {posts.map((p: any) => (
-          <SharedPostCard key={p.id} driveId={driveId} id={p.id} title={p.title} date={p.date} />
+          <PostCard key={p.id} driveId={driveId} id={p.id} title={p.title} date={p.date} />
         ))}
         {posts.length === 0 && (
           <div className="text-center text-sm text-black/60 dark:text-white/60 py-12">No posts found in shared folder.</div>
