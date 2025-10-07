@@ -1,5 +1,35 @@
 import { auth } from "@/auth";
 
+async function getThumbnail(accessToken: string, itemId: string): Promise<string | undefined> {
+  try {
+    const res = await fetch(
+      `https://graph.microsoft.com/v1.0/me/drive/items/${itemId}/thumbnails`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (!res.ok) return undefined;
+    const td = await res.json();
+    const t0 = td?.value?.[0];
+    return t0?.large?.url || t0?.medium?.url || t0?.small?.url;
+  } catch {
+    return undefined;
+  }
+}
+
+async function getTextContent(accessToken: string, itemId: string): Promise<string | null> {
+  try {
+    const capRes = await fetch(
+      `https://graph.microsoft.com/v1.0/me/drive/items/${itemId}/content`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (capRes.ok) return await capRes.text();
+  } catch {}
+  return null;
+}
+
+function isMedia(mime: string, name: string): boolean {
+  return mime.startsWith("image/") || mime.startsWith("video/") || name.toLowerCase().endsWith(".mp4");
+}
+
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const session = await auth();
   if (!session) return new Response("Unauthorized", { status: 401 });
@@ -27,33 +57,15 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   let description: string | null = null;
   const images: { id: string; name: string; mimeType?: string; thumbnailUrl?: string }[] = [];
   for (const it of childrenData.value || []) {
-    if (it.file) {
-      const mt = it.file?.mimeType || "";
-      if (/^image\//.test(mt)) {
-        let thumbnailUrl: string | undefined;
-        try {
-          const thumbRes = await fetch(
-            `https://graph.microsoft.com/v1.0/me/drive/items/${it.id}/thumbnails`,
-            { headers: { Authorization: `Bearer ${accessToken}` } }
-          );
-          if (thumbRes.ok) {
-            const td = await thumbRes.json();
-            if (td.value && td.value[0]) {
-              // Always prefer large, then medium, then small
-              thumbnailUrl = td.value[0].large?.url || td.value[0].medium?.url || td.value[0].small?.url;
-            }
-          }
-        } catch {}
-        images.push({ id: it.id, name: it.name, mimeType: mt, thumbnailUrl });
-      } else if (/\.(txt|md)$/i.test(it.name)) {
-        // Fetch caption text content
-        try {
-          const capRes = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${it.id}/content`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          });
-          if (capRes.ok) description = await capRes.text();
-        } catch {}
-      }
+    if (!it.file) continue;
+    const mt = it.file?.mimeType || "";
+    if (isMedia(mt, it.name)) {
+      const thumbnailUrl = await getThumbnail(accessToken, it.id);
+      images.push({ id: it.id, name: it.name, mimeType: mt, thumbnailUrl });
+      continue;
+    }
+    if (/\.(txt|md)$/i.test(it.name)) {
+      description = (await getTextContent(accessToken, it.id)) ?? description;
     }
   }
 

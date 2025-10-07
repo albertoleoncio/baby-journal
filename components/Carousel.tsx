@@ -4,7 +4,7 @@ import { useState } from "react";
 
 type Img = { id: string; name: string; mimeType?: string; thumbnailUrl?: string };
 
-export function Carousel({ images }: { images: Img[] }) {
+export function Carousel({ images }: Readonly<{ images: Img[] }>) {
   const [index, setIndex] = useState(0);
   const count = images.length;
   if (count === 0) return null;
@@ -27,16 +27,39 @@ export function Carousel({ images }: { images: Img[] }) {
     else if (dx < -30) next();
   }
 
+  const item = images[index];
+  const isVideo = (item.mimeType || "").startsWith("video/") || item.name.toLowerCase().endsWith(".mp4");
+  const driveId = (item as any).driveId as string | undefined;
+
+  const mediaUrl = (() => {
+    const base = `/api/image?id=${encodeURIComponent(item.id)}`;
+    return driveId ? `${base}&driveId=${encodeURIComponent(driveId)}` : base;
+  })();
+
   return (
     <div className="relative aspect-[4/5] bg-black/5 dark:bg-white/5">
-      <img
-        src={images[index].thumbnailUrl || `/api/image?id=${encodeURIComponent(images[index].id)}`}
-        alt={images[index].name}
-        className="w-full h-full object-cover"
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-        loading="lazy"
-      />
+      {isVideo ? (
+        <video
+          src={mediaUrl}
+          poster={item.thumbnailUrl}
+          className="w-full h-full object-cover"
+          controls
+          preload="metadata"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          <track kind="captions" label="captions" />
+        </video>
+      ) : (
+        <img
+          src={item.thumbnailUrl || mediaUrl}
+          alt={item.name}
+          className="w-full h-full object-cover"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          loading="lazy"
+        />
+      )}
       {count > 1 && (
         <>
           <button
